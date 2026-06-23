@@ -1,0 +1,42 @@
+name: Creation APK Android
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Récupération du code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Installation de Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: ☕ Installation de Java (Requis pour Android)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: 📦 Installation des outils
+      run: |
+        npm install
+        npm install @capacitor/android
+        npx cap add android
+        npx cap sync android
+
+    - name: 🛠️ Compilation de l'APK
+      working-directory: ./android
+      run: ./gradlew assembleDebug
+
+    - name: 🚀 Mise à disposition de l'APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mon-Application-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
